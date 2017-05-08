@@ -26,7 +26,8 @@ class SpiderMain(object):
 
 if __name__ == "__main__":
 
-    root_uid = "Your root id"
+
+    root_uid = "XXXXXX"
     spider = SpiderMain()
     spider.craw(root_uid)
 
