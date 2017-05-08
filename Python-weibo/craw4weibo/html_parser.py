@@ -8,11 +8,16 @@ from lxml import etree
 class HtmlParser(object):
 
     def _save_user_data(self, url):
+        res_url = url.split("/")
+        num = len(res_url)
+        user_id = res_url[num - 1]
+        url = "%s?filter=1" % url
         print url
-        cookie = "#Your Cookie"
-        headers = "#Your header"
+
+        cookie = {}
+        #headers = ""
         #get web page using request
-        response = requests.get(url, cookies=cookie, headers=headers)
+        response = requests.get(url, cookies=cookie)
         print "code:", response.status_code
         html_cont = response.content
         # get current user_id
@@ -41,7 +46,7 @@ class HtmlParser(object):
                     #download weibo of certain page
                     url = 'https://weibo.cn/%s?filter=1&page=%d' % (user_id, page)
                     #print url
-                    lxml = requests.get(url, cookies=cookie, headers=headers).content
+                    lxml = requests.get(url, cookies=cookie).content
                     selector = etree.HTML(lxml)
                     content = selector.xpath('//span[@class="ctt"]')
                     for each in content:
@@ -51,6 +56,7 @@ class HtmlParser(object):
                             text = "%d: " % (word_count - 2) + text + "\n"
                         else:
                             text = text + "\n\n"
+                        print text
                         result = result + text
                         word_count += 1
                     print 'getting',page, ' page word ok!'
@@ -82,10 +88,10 @@ class HtmlParser(object):
         res_url = url.split("/")
         num = len(res_url)
         user_id = res_url[num - 1]
-        cookie = "#Your Cookie"
+        cookie = {}
         headers = "#Your header"
         url = 'https://weibo.cn/%s/follow' % user_id
-        response = requests.get(url, cookies=cookie,headers=headers).content
+        response = requests.get(url, cookies=cookie).content
         selector = etree.HTML(response)
         pageNum = (int)(selector.xpath('//input[@name="mp"]')[0].attrib['value'])
 
@@ -101,7 +107,7 @@ class HtmlParser(object):
             for page in range(i, j):
                 try:
                     url = 'https://weibo.cn/%s/follow?page=%d' % (user_id, page)
-                    lxml = requests.get(url, cookies=cookie, headers=headers).content
+                    lxml = requests.get(url, cookies=cookie).content
                     selector = etree.HTML(lxml)
                     content = selector.xpath('/html/body/table/tr/td[2]/a[1]')
                     for c in content:
@@ -126,9 +132,15 @@ class HtmlParser(object):
         if url is None:
             return
         print "saving"
-        self._save_user_data(url)
+        try:
+            self._save_user_data(url)
+        except:
+            print "error in saving %s" % url
         print "getting"
-        new_urls = self._get_new_urls(url)
+        try:
+            new_urls = self._get_new_urls(url)
+        except:
+            print "error in getting %s" % url
         print "finishing"
         return new_urls
 
